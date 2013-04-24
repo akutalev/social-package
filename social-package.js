@@ -25,13 +25,100 @@ function Social ( name ) {
 
 }
 
+Social.prototype.facebook = new function () {
+
+    var fb = this
+
+    fb.init = function () {
+
+        window.fbAsyncInit = function() {
+            FB.init({
+                appId      : #APPLICATION_ID#,
+                status     : true,
+                cookie     : true,
+                xfbml      : true
+            })
+            FB.getLoginStatus(function(response) {
+                fb.status = response
+            })
+        }
+
+        async(function() {
+
+            $( 'body' ).append( '<div id="fb-root" style="display: none" />' )
+
+            var js,
+                d = document,
+                id = 'facebook-jssdk'
+
+            if ( d.getElementById( id ) ) return
+
+            js = d.createElement( 'script' )
+            js.type = "text/javascript"
+            js.id = id
+            js.async = true
+            js.src = '//connect.facebook.net/en_US/all.js'
+
+            d.getElementsByTagName( 'head' )[0].appendChild( js )
+        })
+
+    }
+
+    fb.checkAuth = function ( callback ) {
+        wait(
+            function(){ return !! fb.status },
+            function(){
+                fb.status = false
+                wait(
+                    function(){ return !! fb.status },
+                    function(){
+                            fb.parseStatus( callback )
+                    }
+                )
+                FB.getLoginStatus(function(response) {
+                    fb.status = response
+                })
+            }
+        )
+    }
+
+    fb.login = function ( callback ) {
+        wait(
+            function(){ return !! fb.status },
+            function(){
+                FB.login(function( response ) {
+                    fb.status = response
+                    fb.parseStatus( callback )
+                })
+            }
+        )
+    }
+
+    fb.logout = function ( callback ) {
+        wait(
+            function(){ return !! fb.status },
+            function(){
+                FB.logout(function( response ) {
+                    fb.status = response
+                    fb.parseStatus( callback )
+                })
+            }
+        )
+    }
+
+    fb.parseStatus = function ( callback ) {
+        var status = ( fb.status.status == 'connected' ) ? fb.status.authResponse.userID : false
+        return callback( status )
+    }
+
+}
 
 Social.prototype.linkedin = new function () {
     var li = this;
     li.init = function () {
         $.getScript("https://platform.linkedin.com/in.js?async=true", function(){
             IN.init({
-                api_key      : 've5y3udnlro9',
+                api_key      : 'API_KEY',
                 authorize    : true
             }, function () {
                 li.status = IN.User.isAuthorized();
